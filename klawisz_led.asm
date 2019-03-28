@@ -5,7 +5,7 @@
 
 	list p=P16F84a
 
-	__CONFIG _HS_OSC & _WDTE_OFF	
+	__CONFIG _HS_OSC & _WDTE_OFF & _PWRTE_ON
 	include "p16f84a.inc"
 
 ;definicje 
@@ -30,7 +30,9 @@ HOW_MUCH_TO_500MS    equ 19
 HOW_MUCH_TO_1000MS    equ 39
 LED_PIN        equ      7
 OUT_0_MASK     equ  b'00000001'
-
+RAM_START  equ 0xc
+RAM_END     equ 0x4f
+    
     ;org __VECTOR_RESET
     org 0h
 
@@ -147,7 +149,22 @@ BEGIN
 
 	movlw	b'01111110'	;ustawiam na wyjscie rb7
 	movwf	TRISB
-	
+
+
+    movlw   RAM_START
+    movwf   FSR
+Registers_init
+    clrf    INDF
+    incf    FSR,f
+    movlw   RAM_END
+    xorwf   FSR,w
+    btfss   STATUS,Z
+    goto    Registers_init
+
+    banksel PORTB 
+    bsf     PORTB,LED_PIN
+
+
 	bsf	INTCON,GIE
 	call 	LOOP
 	end
