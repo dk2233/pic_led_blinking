@@ -25,10 +25,17 @@ ON  equ 1
 OFF equ 0
 
 TASK_TMR0   equ   0
+key_pressed     equ 1
+led_state       equ    2
+
+
+led_state_mask  equ     1 << led_state
+
 HOW_MUCH_TO_100MS    equ 4
 HOW_MUCH_TO_500MS    equ 19
 HOW_MUCH_TO_1000MS    equ 39
 LED_PIN        equ      7
+KEY_PIN         equ 3
 OUT_0_MASK     equ  b'00000001'
 RAM_START  equ 0xc
 RAM_END     equ 0x4f
@@ -73,6 +80,27 @@ return_from_int
     swapf   W_save,W
     retfie
 	
+;this is for checking of keyboard being pressed every cyclic
+;for 10 MHz it is every 26 ms
+Cyclic_every
+    banksel PORTB
+    btfsc   activities,key_pressed
+    goto    key_pressed_check
+
+key_pressed_init    
+    btfss  PORTB,KEY_PIN
+    bsf    activities, key_pressed
+    return
+
+key_pressed_check    
+    btfss   PORTB,KEY_PIN
+    return
+
+    bcf    activities, key_pressed
+    movlw       led_state_mask
+    xorwf   activities,f
+
+    return
 
 Cyclic_100ms
     clrf    count_to_100ms
@@ -82,9 +110,14 @@ Cyclic_500ms
     return
 Cyclic_1s
     clrf    count_to_1s
+    banksel activities 
+    btfsc   activities,led_state
+    goto    LED_OFF
+
     banksel PORTB
     btfss   PORTB,LED_PIN
     goto    LED_ON
+LED_OFF
     bcf  PORTB,LED_PIN
     return
 LED_ON
@@ -100,7 +133,8 @@ Cyclic
     incf   count_to_100ms,f
     incf  count_to_500ms,f
     incf  count_to_1s,f
-
+    
+    call    Cyclic_every
     movlw  HOW_MUCH_TO_100MS
     xorwf   count_to_100ms,w
     btfsc   STATUS,Z
@@ -121,7 +155,6 @@ Cyclic
 
 
 LOOP
-	;call 	klawisz
    
 	btfsc   activities,TASK_TMR0 
     call 	Cyclic
