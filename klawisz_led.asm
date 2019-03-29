@@ -33,14 +33,14 @@ OUT_0_MASK     equ  b'00000001'
 RAM_START  equ 0xc
 RAM_END     equ 0x4f
     
-    ;org __VECTOR_RESET
-    org 0h
+    org __VECTOR_RESET
+    ;org 0h
 
 ;wstawianie do pamieci 23h od adrsu C az do F
 	goto	BEGIN
 
-    ;org  __VECTOR_INT
-    org 4h
+    org  __VECTOR_INT
+    ;org 4h
     goto interrupt_vector
     
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
