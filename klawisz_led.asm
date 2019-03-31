@@ -5,7 +5,7 @@
 
 	list p=P16F84a
 
-	__CONFIG _HS_OSC & _WDTE_OFF & _PWRTE_ON
+	__CONFIG _HS_OSC & _WDTE_ON & _PWRTE_ON
 	include "p16f84a.inc"
 
 ;definicje 
@@ -119,9 +119,11 @@ Cyclic_1s
     goto    LED_ON
 LED_OFF
     bcf  PORTB,LED_PIN
+    bsf    PORTB,4
     return
 LED_ON
     bsf     PORTB,LED_PIN
+    bcf     PORTB,4
     return
 
 Cyclic
@@ -156,6 +158,7 @@ Cyclic
 
 LOOP
    
+    clrwdt
 	btfsc   activities,TASK_TMR0 
     call 	Cyclic
 	
@@ -180,7 +183,7 @@ BEGIN
 	bcf	    OPTION_REG,PSA	;prescaling dla Timer0
 	bCf     OPTION_REG,T0CS ;dopiero teraz w³±cz zegar
 
-	movlw	b'01111110'	;ustawiam na wyjscie rb7
+	movlw	b'01101110'	;ustawiam na wyjscie rb7
 	movwf	TRISB
 
 
